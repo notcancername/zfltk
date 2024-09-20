@@ -57,6 +57,7 @@ pub fn initWithOpts(b: *Build, opts: SdkOpts) !*Sdk {
 
 pub fn link(sdk: *Sdk, exe: *Build.Module) !void {
     const install_prefix = sdk.install_prefix;
+    std.debug.print("{s}", .{install_prefix});
     if (sdk.opts.use_fltk_config) {
         try utils.link_using_fltk_config(sdk.builder, exe, sdk.finalize_cfltk, sdk.install_prefix);
     } else {
@@ -78,7 +79,6 @@ pub fn build(b: *Build) !void {
     });
     zfltk_module.addIncludePath(b.path("zig-out/cfltk/include"));
     try link(sdk, zfltk_module);
-    b.default_step.dependOn(sdk.finalize_cfltk);
 
     const examples_step = b.step("examples", "build the examples");
     if (sdk.opts.build_examples) {
