@@ -189,91 +189,91 @@ pub fn cfltk_build_from_source(b: *Build, finalize_cfltk: *Build.Step, install_p
     };
 }
 
-pub fn cfltk_link(exe: *CompileStep, install_prefix: []const u8, opts: FinalOpts) !void {
+pub fn cfltk_link(exe: *Build.Module, install_prefix: []const u8, opts: FinalOpts) !void {
     var buf: [1024]u8 = undefined;
-    const target = exe.root_module.resolved_target.?.result;
+    const target = exe.resolved_target.?.result;
     const inc_dir = try std.fmt.bufPrint(buf[0..], "{s}/cfltk/include", .{install_prefix});
     exe.addIncludePath(.{ .cwd_relative = inc_dir });
     const lib_dir = try std.fmt.bufPrint(buf[0..], "{s}/cfltk/lib/lib", .{install_prefix});
     exe.addLibraryPath(.{ .cwd_relative = lib_dir });
     const lib64_dir = try std.fmt.bufPrint(buf[0..], "{s}/cfltk/lib/lib64", .{install_prefix});
     exe.addLibraryPath(.{ .cwd_relative = lib64_dir });
-    exe.linkSystemLibrary("cfltk");
-    exe.linkSystemLibrary("fltk");
-    exe.linkSystemLibrary("fltk_images");
+    exe.linkSystemLibrary("cfltk", .{});
+    exe.linkSystemLibrary("fltk", .{});
+    exe.linkSystemLibrary("fltk_images", .{});
     if (opts.system_png) {
-        exe.linkSystemLibrary("png");
+        exe.linkSystemLibrary("png", .{});
     } else {
-        exe.linkSystemLibrary("fltk_png");
+        exe.linkSystemLibrary("fltk_png", .{});
     }
     if (opts.system_jpeg) {
-        exe.linkSystemLibrary("jpeg");
+        exe.linkSystemLibrary("jpeg", .{});
     } else {
-        exe.linkSystemLibrary("fltk_jpeg");
+        exe.linkSystemLibrary("fltk_jpeg", .{});
     }
     if (opts.system_zlib) {
-        exe.linkSystemLibrary("z");
+        exe.linkSystemLibrary("z", .{});
     } else {
-        exe.linkSystemLibrary("fltk_z");
+        exe.linkSystemLibrary("fltk_z", .{});
     }
-    exe.linkSystemLibrary("fltk_gl");
-    exe.linkLibC();
-    exe.linkLibCpp();
+    exe.linkSystemLibrary("fltk_gl", .{});
+    exe.link_libc = true;
+    exe.link_libcpp = true;
     if (target.os.tag == .windows) {
-        exe.linkSystemLibrary("ws2_32");
-        exe.linkSystemLibrary("comctl32");
-        exe.linkSystemLibrary("gdi32");
-        exe.linkSystemLibrary("oleaut32");
-        exe.linkSystemLibrary("ole32");
-        exe.linkSystemLibrary("uuid");
-        exe.linkSystemLibrary("shell32");
-        exe.linkSystemLibrary("advapi32");
-        exe.linkSystemLibrary("comdlg32");
-        exe.linkSystemLibrary("winspool");
-        exe.linkSystemLibrary("user32");
-        exe.linkSystemLibrary("kernel32");
-        exe.linkSystemLibrary("odbc32");
-        exe.linkSystemLibrary("gdiplus");
-        exe.linkSystemLibrary("opengl32");
-        exe.linkSystemLibrary("glu32");
+        exe.linkSystemLibrary("ws2_32", .{});
+        exe.linkSystemLibrary("comctl32", .{});
+        exe.linkSystemLibrary("gdi32", .{});
+        exe.linkSystemLibrary("oleaut32", .{});
+        exe.linkSystemLibrary("ole32", .{});
+        exe.linkSystemLibrary("uuid", .{});
+        exe.linkSystemLibrary("shell32", .{});
+        exe.linkSystemLibrary("advapi32", .{});
+        exe.linkSystemLibrary("comdlg32", .{});
+        exe.linkSystemLibrary("winspool", .{});
+        exe.linkSystemLibrary("user32", .{});
+        exe.linkSystemLibrary("kernel32", .{});
+        exe.linkSystemLibrary("odbc32", .{});
+        exe.linkSystemLibrary("gdiplus", .{});
+        exe.linkSystemLibrary("opengl32", .{});
+        exe.linkSystemLibrary("glu32", .{});
     } else if (target.isDarwin()) {
-        exe.linkFramework("Carbon");
-        exe.linkFramework("Cocoa");
-        exe.linkFramework("ApplicationServices");
-        exe.linkFramework("OpenGL");
-        exe.linkFramework("UniformTypeIdentifiers");
+        exe.linkFramework("Carbon", .{});
+        exe.linkFramework("Cocoa", .{});
+        exe.linkFramework("ApplicationServices", .{});
+        exe.linkFramework("OpenGL", .{});
+        exe.linkFramework("UniformTypeIdentifiers", .{});
     } else {
         if (opts.use_wayland) {
-            exe.linkSystemLibrary("wayland-client");
-            exe.linkSystemLibrary("wayland-cursor");
-            exe.linkSystemLibrary("xkbcommon");
-            exe.linkSystemLibrary("dbus-1");
-            exe.linkSystemLibrary("EGL");
-            exe.linkSystemLibrary("wayland-egl");
+            exe.linkSystemLibrary("wayland-client", .{});
+            exe.linkSystemLibrary("wayland-cursor", .{});
+            exe.linkSystemLibrary("xkbcommon", .{});
+            exe.linkSystemLibrary("dbus-1", .{});
+            exe.linkSystemLibrary("EGL", .{});
+            exe.linkSystemLibrary("wayland-egl", .{});
         }
-        exe.linkSystemLibrary("GL");
-        exe.linkSystemLibrary("GLU");
-        exe.linkSystemLibrary("pthread");
-        exe.linkSystemLibrary("X11");
-        exe.linkSystemLibrary("Xext");
-        exe.linkSystemLibrary("Xinerama");
-        exe.linkSystemLibrary("Xcursor");
-        exe.linkSystemLibrary("Xrender");
-        exe.linkSystemLibrary("Xfixes");
-        exe.linkSystemLibrary("Xft");
-        exe.linkSystemLibrary("fontconfig");
-        exe.linkSystemLibrary("pango-1.0");
-        exe.linkSystemLibrary("pangoxft-1.0");
-        exe.linkSystemLibrary("gobject-2.0");
-        exe.linkSystemLibrary("cairo");
-        exe.linkSystemLibrary("pangocairo-1.0");
+        exe.linkSystemLibrary("GL", .{});
+        exe.linkSystemLibrary("GLU", .{});
+        exe.linkSystemLibrary("pthread", .{});
+        exe.linkSystemLibrary("X11", .{});
+        exe.linkSystemLibrary("Xext", .{});
+        exe.linkSystemLibrary("Xinerama", .{});
+        exe.linkSystemLibrary("Xcursor", .{});
+        exe.linkSystemLibrary("Xrender", .{});
+        exe.linkSystemLibrary("Xfixes", .{});
+        exe.linkSystemLibrary("Xft", .{});
+        exe.linkSystemLibrary("fontconfig", .{});
+        exe.linkSystemLibrary("pango-1.0", .{});
+        exe.linkSystemLibrary("pangoxft-1.0", .{});
+        exe.linkSystemLibrary("gobject-2.0", .{});
+        exe.linkSystemLibrary("cairo", .{});
+        exe.linkSystemLibrary("pangocairo-1.0", .{});
     }
 }
 
-pub fn link_using_fltk_config(b: *Build, exe: *CompileStep, finalize_cfltk: *Build.Step, install_prefix: []const u8) !void {
-    const target = exe.root_module.resolved_target.?.result;
-    exe.linkLibC();
-    exe.linkLibCpp();
+pub fn link_using_fltk_config(b: *Build, exe: *Build.Module, finalize_cfltk: *Build.Step, install_prefix: []const u8) !void {
+    const target = exe.resolved_target.?.result;
+    exe.link_libc = true;
+    exe.link_libcpp = true;
     var buf: [1024]u8 = undefined;
     const inc_dir = try std.fmt.bufPrint(buf[0..], "{s}/cfltk/include", .{install_prefix});
     exe.addIncludePath(b.path(inc_dir));
@@ -285,8 +285,8 @@ pub fn link_using_fltk_config(b: *Build, exe: *CompileStep, finalize_cfltk: *Bui
     };
     var lib = b.addStaticLibrary(.{
         .name = "cfltk",
-        .target = exe.root_module.resolved_target.?,
-        .optimize = exe.root_module.optimize.?,
+        .target = exe.resolved_target.?,
+        .optimize = exe.optimize.?,
         .use_llvm = false,
     });
     const proc = try std.process.Child.run(.{
@@ -295,7 +295,7 @@ pub fn link_using_fltk_config(b: *Build, exe: *CompileStep, finalize_cfltk: *Bui
     });
     const out = proc.stdout;
     var cflags = std.ArrayList([]const u8).init(b.allocator);
-    var it = std.mem.tokenize(u8, out, " ");
+    var it = std.mem.tokenizeScalar(u8, out, ' ');
     while (it.next()) |x| {
         try cflags.append(x);
     }
@@ -338,7 +338,7 @@ pub fn link_using_fltk_config(b: *Build, exe: *CompileStep, finalize_cfltk: *Bui
     const out2 = proc2.stdout;
     var lflags = std.ArrayList([]const u8).init(b.allocator);
     var Lflags = std.ArrayList([]const u8).init(b.allocator);
-    var it2 = std.mem.tokenize(u8, out2, " ");
+    var it2 = std.mem.tokenizeScalar(u8, out2, ' ');
     while (it2.next()) |x| {
         if (std.mem.startsWith(u8, x, "-l") and !std.mem.startsWith(u8, x, "-ldl")) try lflags.append(x[2..]);
         if (std.mem.startsWith(u8, x, "-L")) try Lflags.append(x[2..]);
@@ -352,6 +352,5 @@ pub fn link_using_fltk_config(b: *Build, exe: *CompileStep, finalize_cfltk: *Bui
     lib.linkLibC();
     lib.linkLibCpp();
     lib.step.dependOn(finalize_cfltk);
-    exe.step.dependOn(&lib.step);
     exe.linkLibrary(lib);
 }

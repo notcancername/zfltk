@@ -54,18 +54,8 @@ pub fn initWithOpts(b: *Build, opts: SdkOpts) !*Sdk {
     return sdk;
 }
 
-pub fn getZfltkModule(sdk: *Sdk, b: *Build) *Build.Module {
-    _ = sdk;
-    const prefix = comptime std.fs.path.dirname(@src().file) orelse unreachable;
-    var mod = b.addModule("zfltk", .{
-        .root_source_file = .{ .cwd_relative = prefix ++ "/src/zfltk.zig" },
-    });
-    mod.addIncludePath(b.path("zig-out/cfltk/include"));
-    return mod;
-}
 
-pub fn link(sdk: *Sdk, exe: *CompileStep) !void {
-    exe.step.dependOn(sdk.finalize_cfltk);
+pub fn link(sdk: *Sdk, exe: *Build.Module) !void {
     const install_prefix = sdk.install_prefix;
     if (sdk.opts.use_fltk_config) {
         try utils.link_using_fltk_config(sdk.builder, exe, sdk.finalize_cfltk, sdk.install_prefix);
@@ -77,27 +67,34 @@ pub fn link(sdk: *Sdk, exe: *CompileStep) !void {
 pub fn build(b: *Build) !void {
     const target = b.standardTargetOptions(.{});
     const mode = b.standardOptimizeOption(.{});
+
     const sdk = try Sdk.init(b);
-    const zfltk_module = sdk.getZfltkModule(b);
+    var zfltk_module = b.addModule("zfltk", .{
+        .root_source_file = b.path("src/zfltk.zig"),
+        .target = target,
+        .optimize = mode,
+        .link_libc = true,
+    });
+    zfltk_module.addIncludePath(b.path("zig-out/cfltk/include"));
+    try link(sdk, zfltk_module);
+
+    const examples_step = b.step("examples", "build the examples");
     if (sdk.opts.build_examples) {
-        const examples_step = b.step("examples", "build the examples");
         b.default_step.dependOn(examples_step);
+    }
+    for (utils.examples) |example| {
+        const exe = b.addExecutable(.{
+            .name = example.output,
+            .root_source_file = b.path(example.input),
+            .optimize = mode,
+            .target = target,
+        });
+        exe.root_module.addImport("zfltk", zfltk_module);
+        examples_step.dependOn(&exe.step);
+        b.installArtifact(exe);
 
-        for (utils.examples) |example| {
-            const exe = b.addExecutable(.{
-                .name = example.output,
-                .root_source_file = b.path(example.input),
-                .optimize = mode,
-                .target = target,
-            });
-            exe.root_module.addImport("zfltk", zfltk_module);
-            try sdk.link(exe);
-            examples_step.dependOn(&exe.step);
-            b.installArtifact(exe);
-
-            const run_cmd = b.addRunArtifact(exe);
-            const run_step = b.step(b.fmt("run-{s}", .{example.output}), example.description.?);
-            run_step.dependOn(&run_cmd.step);
-        }
+        const run_cmd = b.addRunArtifact(exe);
+        const run_step = b.step(b.fmt("run-{s}", .{example.output}), example.description.?);
+        run_step.dependOn(&run_cmd.step);
     }
 }

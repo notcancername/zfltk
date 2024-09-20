@@ -33,7 +33,6 @@ zfltk supports the zig package manager. You can add it as a dependency to your p
 In your build.zig:
 ```zig
 const std = @import("std");
-const Sdk = @import("zfltk");
 const Build = std.Build;
 
 pub fn build(b: *Build) !void {
@@ -45,11 +44,7 @@ pub fn build(b: *Build) !void {
         .optimize = mode,
         .target = target,
     });
-
-    const sdk = try Sdk.init(b);
-    const zfltk_module = sdk.getZfltkModule(b);
-    exe.root_module.addImport("zfltk", zfltk_module);
-    try sdk.link(exe);
+    exe.root_module.addImport("zfltk", b.dependency("zfltk", .{}).module("zfltk"));
 
     b.installArtifact(exe);
 
@@ -67,7 +62,7 @@ Then you can run:
 zig build run
 ```
 
-## Dependencies 
+## Dependencies
 
 This repo tracks cfltk, the C bindings to FLTK. It (along with FLTK) is statically linked to your application.
 This requires CMake (and Ninja on Windows) as a build system, and is only required once.
@@ -284,4 +279,3 @@ Widgets also provide a `call` method which allows to call any method that wasn't
 ![alt_test](screenshots/editor.jpg)
 
 [video tutorial](https://youtu.be/D2ijlrDStdM)
-
