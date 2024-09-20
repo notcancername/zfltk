@@ -74,9 +74,11 @@ pub fn build(b: *Build) !void {
         .target = target,
         .optimize = mode,
         .link_libc = true,
+        .link_libcpp = true,
     });
     zfltk_module.addIncludePath(b.path("zig-out/cfltk/include"));
     try link(sdk, zfltk_module);
+    b.default_step.dependOn(sdk.finalize_cfltk);
 
     const examples_step = b.step("examples", "build the examples");
     if (sdk.opts.build_examples) {
